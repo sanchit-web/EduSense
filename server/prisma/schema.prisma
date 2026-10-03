@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studentProfile StudentProfile?
+  teacherCourses Course[] @relation("TeacherCourses")
+}
+
+model StudentProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  studentId String   @unique
+  department String?
+  semester  Int?
+  year      Int?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  academicRecords AcademicRecord[]
+  predictions     Prediction[]
+  enrollments     Enrollment[]
+}
+
+model Course {
+  id        String   @id @default(uuid())
+  name      String
+  code      String   @unique
+  teacherId String?
+  createdAt DateTime @default(now())
+
+  teacher     User?        @relation("TeacherCourses", fields: [teacherId], references: [id], onDelete: SetNull)
+  enrollments Enrollment[]
+}
+
+model Enrollment {
+  id        String @id @default(uuid())
+  studentId String
+  courseId  String
+
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+}
+
+model AcademicRecord {
+  id                String   @id @default(uuid())
+  studentId         String
+  attendance        Float
+  assignmentScore   Float
+  internalMarks     Float
+  studyHours        Float
+  participation     Float
+  previousGpa       Float?
+  semester          Int
+  recordedAt        DateTime @default(now())
+
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+}
+
+model Prediction {
+  id          String     @id @default(uuid())
+  studentId   String
+  predictedScore Float?
+  riskLevel   RiskLevel
+  probability Float?
+  modelName   String
+  modelVersion String?
+  explanation Json?
+  createdAt   DateTime   @default(now())
+
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([riskLevel])
+}
