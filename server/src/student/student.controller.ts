@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import prisma from "../lib/prisma.js";
+import type { AuthenticatedRequest } from "../auth/auth.middleware.js";
 
 export async function createStudentProfile(req: Request, res: Response) {
   try {
@@ -27,15 +28,19 @@ export async function createStudentProfile(req: Request, res: Response) {
     });
   }
 }
-export async function getStudentProfile(req: Request, res: Response) {
-  try {
-    const userId = req.params.userId;
 
-if (typeof userId !== "string") {
-  return res.status(400).json({
-    message: "Invalid userId",
-  });
-}
+export async function getStudentProfile(
+  req: AuthenticatedRequest,
+  res: Response
+) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication required",
+      });
+    }
+
+    const userId = req.user.id;
 
     const studentProfile = await prisma.studentProfile.findUnique({
       where: { userId },
