@@ -25,3 +25,30 @@ export async function createCourse(req: Request, res: Response) {
     });
   }
 }
+
+export async function getCourses(req: Request, res: Response) {
+  try {
+    const courses = await prisma.course.findMany({
+      include: {
+        teacher: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return res.json({ courses });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Failed to fetch courses",
+    });
+  }
+}
