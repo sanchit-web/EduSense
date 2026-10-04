@@ -1,14 +1,23 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
 import prisma from "../lib/prisma.js";
 import type { AuthenticatedRequest } from "../auth/auth.middleware.js";
 
-export async function createStudentProfile(req: Request, res: Response) {
+export async function createStudentProfile(
+  req: AuthenticatedRequest,
+  res: Response
+) {
   try {
-    const { userId, studentId, department, semester, year } = req.body;
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication required",
+      });
+    }
+
+    const { studentId, department, semester, year } = req.body;
 
     const studentProfile = await prisma.studentProfile.create({
       data: {
-        userId,
+        userId: req.user.id,
         studentId,
         department,
         semester,

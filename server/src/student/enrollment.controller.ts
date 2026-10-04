@@ -1,13 +1,38 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
 import prisma from "../lib/prisma.js";
+import type { AuthenticatedRequest } from "../auth/auth.middleware.js";
 
-export async function enrollStudent(req: Request, res: Response) {
+export async function enrollStudent(
+  req: AuthenticatedRequest,
+  res: Response
+) {
   try {
-    const { studentId, courseId } = req.body;
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication required",
+      });
+    }
+
+    const studentProfile = await prisma.studentProfile.findUnique({
+      where: {
+        userId: req.user.id,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!studentProfile) {
+      return res.status(404).json({
+        message: "Student profile not found",
+      });
+    }
+
+    const { courseId } = req.body;
 
     const enrollment = await prisma.enrollment.create({
       data: {
-        studentId,
+        studentId: studentProfile.id,
         courseId,
       },
     });
@@ -24,21 +49,37 @@ export async function enrollStudent(req: Request, res: Response) {
     });
   }
 }
+
 export async function getStudentEnrollments(
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response
 ) {
   try {
-    const { studentId } = req.params;
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication required",
+      });
+    }
 
-    if (typeof studentId !== "string") {
-      return res.status(400).json({
-        message: "Invalid studentId",
+    const studentProfile = await prisma.studentProfile.findUnique({
+      where: {
+        userId: req.user.id,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!studentProfile) {
+      return res.status(404).json({
+        message: "Student profile not found",
       });
     }
 
     const enrollments = await prisma.enrollment.findMany({
-      where: { studentId },
+      where: {
+        studentId: studentProfile.id,
+      },
       include: {
         course: true,
       },

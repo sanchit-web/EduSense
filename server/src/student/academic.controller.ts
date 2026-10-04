@@ -1,10 +1,34 @@
 import type { Request, Response } from "express";
 import prisma from "../lib/prisma.js";
+import type { AuthenticatedRequest } from "../auth/auth.middleware.js";
 
-export async function createAcademicRecord(req: Request, res: Response) {
+export async function createAcademicRecord(
+  req: AuthenticatedRequest,
+  res: Response
+) {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication required",
+      });
+    }
+
+    const studentProfile = await prisma.studentProfile.findUnique({
+      where: {
+        userId: req.user.id,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!studentProfile) {
+      return res.status(404).json({
+        message: "Student profile not found",
+      });
+    }
+
     const {
-      studentId,
       attendance,
       assignmentScore,
       internalMarks,
@@ -16,7 +40,7 @@ export async function createAcademicRecord(req: Request, res: Response) {
 
     const record = await prisma.academicRecord.create({
       data: {
-        studentId,
+        studentId: studentProfile.id,
         attendance,
         assignmentScore,
         internalMarks,
@@ -40,19 +64,39 @@ export async function createAcademicRecord(req: Request, res: Response) {
   }
 }
 
-export async function getAcademicRecords(req: Request, res: Response) {
+export async function getAcademicRecords(
+  req: AuthenticatedRequest,
+  res: Response
+) {
   try {
-    const { studentId } = req.params;
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication required",
+      });
+    }
 
-    if (typeof studentId !== "string") {
-      return res.status(400).json({
-        message: "Invalid studentId",
+    const studentProfile = await prisma.studentProfile.findUnique({
+      where: {
+        userId: req.user.id,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!studentProfile) {
+      return res.status(404).json({
+        message: "Student profile not found",
       });
     }
 
     const records = await prisma.academicRecord.findMany({
-      where: { studentId },
-      orderBy: { recordedAt: "desc" },
+      where: {
+        studentId: studentProfile.id,
+      },
+      orderBy: {
+        recordedAt: "desc",
+      },
     });
 
     return res.json({ records });
