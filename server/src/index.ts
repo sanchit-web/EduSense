@@ -6,6 +6,8 @@ import prisma from "./lib/prisma.js";
 import authRoutes from "./auth/auth.routes.js";
 import studentRoutes from "./student/student.routes.js";
 import academicRoutes from "./student/academic.routes.js";
+import courseRoutes from "./student/course.routes.js";
+import enrollmentRoutes from "./student/enrollment.routes.js";
 
 const app = express();
 const PORT = 5000;
@@ -16,6 +18,8 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/student", academicRoutes);
+app.use("/api/student", courseRoutes);
+app.use("/api/student", enrollmentRoutes);
 
 app.get("/health", async (_req, res) => {
   try {
