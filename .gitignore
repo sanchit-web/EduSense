@@ -32,3 +32,6 @@ Thumbs.db
 # VS Code
 .vscode/*
 !.vscode/settings.json
+
+# ML model artifacts
+ml-service/models/random_forest.joblib
