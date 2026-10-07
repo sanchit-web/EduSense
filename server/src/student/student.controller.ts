@@ -13,16 +13,27 @@ export async function createStudentProfile(
       });
     }
 
-    const { studentId, department, semester, year } = req.body;
+    const {
+  studentId,
+  department,
+  semester,
+  year,
+  gender,
+  age,
+  learningStyle,
+} = req.body;
 
     const studentProfile = await prisma.studentProfile.create({
       data: {
-        userId: req.user.id,
-        studentId,
-        department,
-        semester,
-        year,
-      },
+  userId: req.user.id,
+  studentId,
+  department,
+  semester,
+  year,
+  gender,
+  age,
+  learningStyle,
+},
     });
 
     return res.status(201).json({
@@ -67,6 +78,47 @@ export async function getStudentProfile(
 
     return res.status(500).json({
       message: "Failed to fetch student profile",
+    });
+  }
+}
+
+export async function updateStudentProfile(
+  req: AuthenticatedRequest,
+  res: Response
+) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication required",
+      });
+    }
+
+    const {
+      gender,
+      age,
+      learningStyle,
+    } = req.body;
+
+    const studentProfile = await prisma.studentProfile.update({
+      where: {
+        userId: req.user.id,
+      },
+      data: {
+        gender,
+        age,
+        learningStyle,
+      },
+    });
+
+    return res.json({
+      message: "Student profile updated successfully",
+      studentProfile,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Failed to update student profile",
     });
   }
 }

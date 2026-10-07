@@ -39,6 +39,9 @@ model StudentProfile {
   department String?
   semester  Int?
   year      Int?
+  gender        Int?
+  age           Int?
+  learningStyle Int?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -70,16 +73,25 @@ model Enrollment {
 }
 
 model AcademicRecord {
-  id                String   @id @default(uuid())
-  studentId         String
-  attendance        Float
-  assignmentScore   Float
-  internalMarks     Float
-  studyHours        Float
-  participation     Float
-  previousGpa       Float?
-  semester          Int
-  recordedAt        DateTime @default(now())
+  id                   String   @id @default(uuid())
+  studentId            String
+  attendance           Float
+  assignmentScore      Float
+  internalMarks        Float
+  studyHours           Float
+  participation        Float
+  previousGpa          Float?
+  semester             Int
+  resources            Int?
+  extracurricular      Int?
+  motivation           Int?
+  internet             Int?
+  onlineCourses        Int?
+  discussions          Int?
+  assignmentCompletion Float?
+  edutech              Int?
+  stressLevel          Int?
+  recordedAt           DateTime @default(now())
 
   student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
