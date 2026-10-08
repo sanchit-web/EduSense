@@ -35,3 +35,9 @@ Thumbs.db
 
 # ML model artifacts
 ml-service/models/random_forest.joblib
+
+# Local test artifacts
+server/academic.json
+server/cookies.txt
+server/login.json
+server/profile.json

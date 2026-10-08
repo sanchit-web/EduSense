@@ -200,7 +200,7 @@ await prisma.prediction.create({
     probability: prediction.probabilities[String(predictedGrade)],
     modelName: "Random Forest",
     modelVersion: "1.0",
-    explanation: prediction.probabilities,
+    explanation: prediction.explanation,
   },
 });
 
